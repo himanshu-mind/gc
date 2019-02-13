@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".pdf.PdfPage">
+    tools:mContext=".pdf.PdfPage">
 
     <ProgressBar
         android:id="@+id/loader"
