@@ -28,8 +28,10 @@ public class ParseJsonApi extends AsyncTask<String, Void, Object[]> {
             HttpURLConnection urlConnection = (HttpURLConnection) (new URL(args[0])).openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
-            urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestMethod("POST");
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+
+            urlConnection.connect();
 
             DataOutputStream outputStream = new DataOutputStream(urlConnection.getOutputStream());
             outputStream.write(args[1].getBytes());
@@ -49,6 +51,8 @@ public class ParseJsonApi extends AsyncTask<String, Void, Object[]> {
             }
 
             bufferedReader.close();
+
+            urlConnection.disconnect();
 
             return new Object[]{true, stringBuilder.toString().trim()};
         } catch (Exception e) {
