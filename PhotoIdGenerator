@@ -1,0 +1,11 @@
+function generateId($mainCount){
+   $id = "IN" . date('ymd');
+   $i = 10 - strlen((string) $mainCount);
+   for ($x = 0; $x < $i; $x++) {
+      $id = $id . "0";
+   }
+   $id = $id . $mainCount;
+   return $id;
+}
+
+echo generateId(123);
