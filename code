@@ -1,0 +1,36 @@
+function generateId($mainCount){
+   $id = "IN" . date('ymd');
+   $i = 10 - strlen((string) $mainCount);
+   for ($x = 0; $x < $i; $x++) {
+      $id = $id . "0";
+   }
+   $id = $id . $mainCount;
+   return $id;
+}
+
+echo generateId(123);
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+ACCOUNT ID GENERATOR CODE
+
+
+function getAccountIdCounter($con, $pinCode, $dateTime){
+	$qry = "SELECT * FROM accountid_counter WHERE `pin_code` = '$pinCode' ";
+	$res = mysqli_query($con, $qry);
+	if(mysqli_num_rows($res) == 0){
+	    $count = 1;
+	    mysqli_query($con, "INSERT INTO accountid_counter (`pin_code`, `count`, `created_at`, `modified_at`) VALUE ('$pinCode', '$count', '$dateTime', '$dateTime')");
+	    return $count;
+	}else{
+	    $data = mysqli_fetch_assoc($res);
+	    $count = (int) $data['count'];
+	    $count = $count + 1;
+	    return $count;
+	}
+}
+
+function setAccountIdCounter($con, $pinCode, $count, $dateTime){
+    mysqli_query($con, "UPDATE accountid_counter SET `count` = '$count', `modified_at` = '$dateTime' WHERE `pin_code` = '$pinCode' ");
+}
