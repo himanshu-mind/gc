@@ -1,0 +1,79 @@
+<?php
+include('config.php');
+
+header('Content-Type: application/json');
+
+function generateaccountId($userid){
+   $id = "";
+   $i = 6 - strlen((string) $userid);
+   for ($x = 0; $x < $i; $x++) {
+      $id = $id . "0";
+   }
+   $id = $id . $userid;
+   return $id;
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $data = json_decode(file_get_contents("php://input"), true);
+    $userid   =     $data["user_id"];
+    $name   =     $data["name"];
+    $email   =     $data["email"];
+    $password   =     $data["password"];
+    $address   =     $data["address"];
+    $area   =     $data["area"];
+    $pincode   =     $data["pincode"];
+    $state   =     $data["state"];
+    $city   =     $data["city"];
+     $gender   =     $data["gender"];
+    $date_of_birth   =     $data["dob"];
+    
+         	 $query1 = "select * from users where user_id = '$userid' ";
+	$queryResult1 = mysqli_query($con, $query1);
+
+	if(mysqli_num_rows($queryResult1) != 0) {            
+
+	 $query = "select * from users where email = '$email' ";
+	$queryResult = mysqli_query($con, $query);
+
+	if(mysqli_num_rows($queryResult) == 0) { // 0 means new user i.e create account
+				$accId = date('ym') . $pincode .generateaccountId($userid);
+
+
+		 $insertQuery = "UPDATE `users` SET `name`='$name',
+`email`='$email',`password`='$password',`address`='$address',`area`='$area',
+`gender`='$gender',`date_of_birth`='$date_of_birth',`pincode`='$pincode',`state`='$state',`account_no`='$accId',
+`city`='$city',`is_register`=1,
+`modified_on`='$dateTime' WHERE `user_id` = '$userid'"; 
+		$insertResult = mysqli_query($con, $insertQuery);
+		
+		if($insertResult) { // check if query is executed successfully
+		
+			$qry = "Select `user_id`, `password`, `name`, `phone`, `email`, `address`, `area`, `gender`, `date_of_birth`, `pincode`, `state`, `city`, `photo`, `account_no`, `is_register`, `created_on`, `modified_on` from users where email = '$email' ";
+            $sql = mysqli_query($con, $qry);
+			$row = mysqli_fetch_assoc($sql);
+			$result = array('status' => 200, 'message' => 'User Registered Successfully','data' => $row);
+		} else {
+			$result = array('status' => 500, 'message' => 'User not created');
+		}
+		
+	} else { // old user i.e return data
+		
+		$result = array('status' => 500, 'message' => 'Email id already exist');
+	
+	}
+	
+	} else { // old user i.e return data
+		
+		$result = array('status' => 500, 'message' => 'user id does not exist');
+	
+	}
+	
+} else {
+	
+    $result = array('status' => 500, 'message' => $_SERVER['REQUEST_METHOD'] . ' request is not allowed.');
+
+}
+
+die(json_encode($result));
+
+?>
