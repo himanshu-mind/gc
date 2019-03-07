@@ -3,6 +3,25 @@ include('config.php');
 
 header('Content-Type: application/json');
 
+function getAccountIdCounter($con, $pinCode, $dateTime){
+	$qry = "SELECT * FROM accountid_counter WHERE `pin_code` = '$pinCode' ";
+	$res = mysqli_query($con, $qry);
+	if(mysqli_num_rows($res) == 0){
+	    $count = 0;
+	    mysqli_query($con, "INSERT INTO accountid_counter (`pin_code`, `count`, `created_at`, `modified_at`) VALUE ('$pinCode', '$count', '$dateTime', '$dateTime')");
+	    return $count + 1;
+	}else{
+	    $data = mysqli_fetch_assoc($res);
+	    $count = (int) $data['count'];
+	    $count = $count + 1;
+	    return $count;
+	}
+}
+
+function setAccountIdCounter($con, $pinCode, $count, $dateTime){
+    mysqli_query($con, "UPDATE accountid_counter SET `count` = '$count', `modified_at` = '$dateTime' WHERE `pin_code` = '$pinCode' ");
+}
+
 function generateaccountId($userid){
    $id = "";
    $i = 6 - strlen((string) $userid);
@@ -12,6 +31,7 @@ function generateaccountId($userid){
    $id = $id . $userid;
    return $id;
 }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $data = json_decode(file_get_contents("php://input"), true);
@@ -36,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$queryResult = mysqli_query($con, $query);
 
 	if(mysqli_num_rows($queryResult) == 0) { // 0 means new user i.e create account
-				$accId = date('ym') . $pincode .generateaccountId($userid);
+	$accCount = getAccountIdCounter($con, $pincode, $dateTime);
+				$accId = date('ym') . $pincode . generateaccountId($accCount);
 
 
 		 $insertQuery = "UPDATE `users` SET `name`='$name',
@@ -47,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$insertResult = mysqli_query($con, $insertQuery);
 		
 		if($insertResult) { // check if query is executed successfully
+		
+		setAccountIdCounter($con, $pincode, $accCount, $dateTime);
 		
 			$qry = "Select `user_id`, `password`, `name`, `phone`, `email`, `address`, `area`, `gender`, `date_of_birth`, `pincode`, `state`, `city`, `photo`, `account_no`, `is_register`, `created_on`, `modified_on` from users where email = '$email' ";
             $sql = mysqli_query($con, $qry);
